@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f5ef">
+  <title>Історії, у яких працює for</title>
+  <style>
+    :root {
+      --ink: #23352f;
+      --muted: #64736c;
+      --paper: #f7f5ef;
+      --card: #fffefa;
+      --green: #2f715b;
+      --green-pale: #e6f1e9;
+      --peach: #f8e6d8;
+      --blue: #e6eef7;
+      --yellow: #f6edc9;
+      --line: #e6e5dc;
+      --shadow: 0 16px 40px rgba(35, 53, 47, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: ui-rounded, "Segoe UI", system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(44px, 8vw, 92px) 22px 56px;
+      background: linear-gradient(135deg, #eaf2e8 0%, #f7f5ef 58%, #f9e9dc 100%);
+    }
+    .hero-inner, main, footer { width: min(1080px, calc(100% - 36px)); margin-inline: auto; }
+    .hero-inner { position: relative; z-index: 1; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 12px; border: 1px solid rgba(47,113,91,.18); border-radius: 999px;
+      color: var(--green); background: rgba(255,255,255,.62); font-size: .88rem; font-weight: 700;
+    }
+    h1 { max-width: 760px; margin: 18px 0 12px; font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1.02; letter-spacing: -.055em; }
+    .hero p { max-width: 650px; margin: 0; color: #4c6056; font-size: clamp(1.05rem, 2vw, 1.22rem); }
+    .hero-art { position: absolute; right: max(2%, calc((100vw - 1080px)/2)); bottom: -35px; width: min(30vw, 300px); min-width: 160px; opacity: .92; }
+    .jumpbar { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 27px; }
+    .jumpbar a { text-decoration: none; padding: 8px 13px; border-radius: 999px; background: white; box-shadow: 0 3px 12px #23352f12; font-size: .91rem; font-weight: 650; }
+    main { padding-block: 30px 72px; }
+    .intro { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 10px 0 28px; }
+    .intro-card { padding: 18px 20px; border: 1px solid var(--line); border-radius: 20px; background: var(--card); }
+    .intro-card strong { display: block; margin-bottom: 3px; color: var(--green); }
+    .story {
+      scroll-margin-top: 18px; margin: 22px 0; padding: clamp(20px, 4vw, 34px);
+      border: 1px solid var(--line); border-radius: 28px; background: var(--card); box-shadow: var(--shadow);
+    }
+    .story-head { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(230px, .9fr); align-items: center; gap: 22px; }
+    .story-number { color: var(--green); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h2 { margin: 4px 0 5px; font-size: clamp(1.55rem, 4vw, 2.25rem); line-height: 1.15; letter-spacing: -.035em; }
+    .author { color: var(--muted); font-size: .96rem; }
+    .illustration { display: block; width: 100%; max-height: 220px; border-radius: 20px; }
+    .task { margin: 20px 0 16px; padding: 17px 19px; border-radius: 18px; background: var(--green-pale); }
+    .task h3, .lesson h3 { margin: 0 0 5px; font-size: 1.02rem; }
+    .task p { margin: 0; }
+    .story-text { margin: 15px 0 18px; padding-left: 18px; border-left: 3px solid #eac7a6; color: #52625a; }
+    .story-text p { margin: 0; }
+    .lesson { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+    .lesson > div { padding: 15px 17px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+    .lesson p { margin: 0; color: #52625a; font-size: .95rem; }
+    .code-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 22px 0 8px; }
+    .code-title h3 { margin: 0; font-size: 1.05rem; }
+    .copy { flex: 0 0 auto; border: 0; border-radius: 999px; padding: 8px 13px; color: white; background: var(--green); font: inherit; font-size: .88rem; font-weight: 700; cursor: pointer; }
+    .copy:hover { background: #245a48; }
+    pre { overflow-x: auto; margin: 0; padding: 19px; border-radius: 17px; color: #e9f2ec; background: #20332d; font:  .9rem/1.58 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 4; }
+    code { font-family: inherit; }
+    .endnote { margin: 12px 0 0; color: var(--muted); font-size: .9rem; }
+    footer { padding: 4px 0 35px; color: var(--muted); text-align: center; font-size: .9rem; }
+    @media (max-width: 700px) {
+      .hero-art { right: -25px; bottom: -12px; width: 165px; opacity: .45; }
+      .hero p { max-width: 90%; }
+      .intro, .story-head, .lesson { grid-template-columns: 1fr; }
+      .illustration { max-height: 190px; }
+      .story { border-radius: 21px; }
+      pre { font-size: .81rem; padding: 15px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">🐾 Python · цикл <code>for</code></span>
+      <h1>Історії,<br>у яких працює <code>for</code></h1>
+      <p>Шість учнівських робіт перетворені на завдання з героями, подіями та готовими програмами. Подивіться, як цикл повторює дії, а умови допомагають обирати подальший хід історії.</p>
+      <nav class="jumpbar" aria-label="Перейти до історії">
+        <a href="#yevhenii">Євгеній · Мурчик</a>
+        <a href="#sasha">Саша · пригода</a>
+        <a href="#ivan">Іван · числа</a>
+        <a href="#roma">Рома · Lucky</a>
+        <a href="#vlad">Влад · ложки</a>
+        <a href="#vasyl">Василь · кіт шукає їжу</a>
+      </nav>
+    </div>
+    <svg class="hero-art" viewBox="0 0 280 240" role="img" aria-label="Ілюстрація котика біля ноутбука">
+      <ellipse cx="143" cy="207" rx="112" ry="17" fill="#bfd6c5"/>
+      <rect x="36" y="132" width="119" height="66" rx="8" fill="#476b5a"/>
+      <rect x="43" y="139" width="105" height="51" rx="4" fill="#e8f1e8"/>
+      <path d="M24 200h144l-12 10H36z" fill="#325747"/>
+      <path d="M180 180c-25-2-35-22-26-43 5-12 18-19 32-16l15-17 8 26c16 15 13 42-3 51-8 5-17 5-26-1z" fill="#333e3b"/>
+      <path d="M173 123l-1-20 17 12m13-3 17-17-1 30" fill="#333e3b"/>
+      <circle cx="182" cy="145" r="3" fill="#f7e4a2"/><circle cx="202" cy="145" r="3" fill="#f7e4a2"/>
+      <path d="M187 155q5 4 10 0m-8 5-9 3m17-3 9 3" fill="none" stroke="#f1c5ad" stroke-width="2" stroke-linecap="round"/>
+      <path d="M162 176q-21 9-26-5" fill="none" stroke="#333e3b" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="87" cy="158" r="5" fill="#96bba2"/><circle cx="107" cy="158" r="5" fill="#96bba2"/><circle cx="127" cy="158" r="5" fill="#96bba2"/>
+    </svg>
+  </header>
+
+  <main>
+    <section class="intro" aria-label="Як читати сторінку">
+      <div class="intro-card"><strong>Що робить цикл?</strong><span><code>for</code> повторює команди для кожного числа або елемента.</span></div>
+      <div class="intro-card"><strong>Що є в кожному завданні?</strong><span>Умова, коротка історія, пояснення циклу та код, який можна скопіювати.</span></div>
+    </section>
+
+    <article class="story" id="yevhenii">
+      <div class="story-head">
+        <div><div class="story-number">Історія 1 · цикл-лічильник</div><h2>Кіт Мурчик і банка згущеного молока</h2><div class="author">Автор програми: Євгеній</div></div>
+        <svg class="illustration" viewBox="0 0 500 220" role="img" aria-label="Кіт біля столу та банки згущеного молока">
+          <rect width="500" height="220" rx="20" fill="#f8e6d8"/><circle cx="430" cy="40" r="22" fill="#fff4c7"/>
+          <path d="M30 145h440v18H30z" fill="#b5784e"/><path d="M60 163v40m380-40v40" stroke="#966144" stroke-width="12"/>
+          <rect x="330" y="91" width="58" height="53" rx="9" fill="#fff6dd" stroke="#d5b77a" stroke-width="3"/><path d="M328 91h62l-7-13h-48z" fill="#d6b567"/><path d="M342 112h34v16h-34z" fill="#9c583d"/><text x="359" y="124" text-anchor="middle" font-size="9" fill="white">МОЛОКО</text>
+          <path d="M136 143q-20-17-9-41l17-18 20 14 26-2 18-13 16 20q10 23-6 40c-10 12-29 15-45 6-12 9-27 7-37-6z" fill="#48504a"/><path d="M134 93l-1-28 26 17m43-4 23-22 2 35" fill="#48504a"/><circle cx="156" cy="111" r="4" fill="#f6d88f"/><circle cx="189" cy="111" r="4" fill="#f6d88f"/><path d="M166 122l7 5 7-5m-9 7-15 5m25-5 15 5" fill="none" stroke="#e9b8a2" stroke-width="2"/>
+          <path d="M125 142q-28 11-31-9" fill="none" stroke="#48504a" stroke-width="9" stroke-linecap="round"/><text x="71" y="54" font-size="15" fill="#476b5a" font-weight="700">Стрибок!</text>
+        </svg>
+      </div>
+      <div class="task"><h3>Завдання-історія</h3><p>На столі стоїть банка згущеного молока. Кіт Мурчик вирішив дістатися до неї. Покажи п’ять спроб стрибнути на стіл. Після п’ятої спроби Мурчик опиняється біля банки, але господар прибирає її та дає котові мисочку води.</p></div>
+      <div class="story-text"><p>Мурчик бачить банку, присідає і стрибає. Перша спроба — ще невдала. Він пробує знову, аж поки на п’ятій спробі не дістається до столу. Та згущене молоко вже забрали!</p></div>
+      <div class="lesson"><div><h3>Як працює <code>for</code></h3><p><code>range(1, 6)</code> дає числа від 1 до 5. Змінна <code>i</code> щоразу показує номер спроби.</p></div><div><h3>Що повторюється?</h3><p>Повідомлення про стрибок виводиться п’ять разів, а потім програма переходить до завершення історії.</p></div></div>
+      <div class="code-title"><h3>Програма Python</h3><button class="copy" type="button">Копіювати код</button></div>
+      <pre><code>print("🐱 Історія про кота Мурчика")
+print("На столі стояла банка згущеного молока.")
+print("Мурчик вирішив дістатися до неї!")
+
+for i in range(1, 6):
+    print("Спроба", i, "— Мурчик стрибає на стіл!")
+
+print("Мурчик нарешті опинився біля банки!")
+print("Але прийшов господар і прибрав згущене молоко.")
+print("Мурчик отримав мисочку води. Кінець!")</code></pre>
+    </article>
+
+    <article class="story" id="sasha">
+      <div class="story-head">
+        <div><div class="story-number">Історія 2 · цикл з умовами</div><h2>Пригода Максима в лісі</h2><div class="author">Авторка завдання: Саша · герой історії: Максим</div></div>
+        <svg class="illustration" viewBox="0 0 500 220" role="img" aria-label="Мандрівник у лісі шукає скриню зі скарбом">
+          <rect width="500" height="220" rx="20" fill="#e6eef7"/><circle cx="420" cy="42" r="24" fill="#fff0b9"/>
+          <path d="M0 180q80-54 155 0t160-3q90-55 185 6v37H0z" fill="#9bbfa1"/>
+          <g fill="#47785f"><path d="M63 159 94 55l31 104zm-35 0 23-73 23 73zm350 0 29-97 30 97zm39 0 28-70 25 70z"/><path d="M87 158h14v42H87zm330 0h14v42h-14z" fill="#79583f"/></g>
+          <path d="M199 165q22-21 43 0t42-1" fill="none" stroke="#75a8c1" stroke-width="13" stroke-linecap="round"/>
+          <rect x="323" y="150" width="59" height="43" rx="5" fill="#9d693c" stroke="#70452c" stroke-width="4"/><path d="M317 150l35-24 35 24z" fill="#c79255" stroke="#70452c" stroke-width="4"/><circle cx="352" cy="169" r="5" fill="#f6dc89"/>
+          <circle cx="161" cy="113" r="12" fill="#dca27d"/><path d="M148 110q13-23 27-1" fill="#54433d"/><path d="M150 128h23l8 34h-36z" fill="#bd7356"/><path d="m152 162-4 29m21-29 6 29" stroke="#394f49" stroke-width="8" stroke-linecap="round"/><path d="m150 136-23 17m43-17 22-13" stroke="#dca27d" stroke-width="7" stroke-linecap="round"/><path d="M189 123l33 8-4 17-33-8z" fill="#f3dc9d" stroke="#8c7048" stroke-width="2"/>
+          <text x="255" y="67" font-size="16" fill="#426b55" font-weight="700">Карта веде до скарбу</text>
+        </svg>
+      </div>
+      <div class="task"><h3>Завдання-історія</h3><p>Максим знаходить у лісі стару карту й вирушає на пошуки скарбу. Створи програму, у якій герой проходить п’ять кроків. На кожному кроці має статися окрема подія: перейти струмок, побачити сліди, знайти ключ, помітити скриню, а потім відкрити її.</p></div>
+      <div class="story-text"><p>Максим іде за картою. Струмок лишається позаду, дивні сліди ведуть глибше в ліс, а старий ключ підказує, що скриня зовсім близько. Під деревом герой знаходить скарб і повертається додому щасливим.</p></div>
+      <div class="lesson"><div><h3>Як працює <code>for</code></h3><p>Цикл проходить числа від 1 до 5. Це п’ять послідовних кроків пригоди.</p></div><div><h3>Навіщо тут <code>if</code></h3><p>Умови <code>if</code>, <code>elif</code> та <code>else</code> вибирають подію відповідно до номера кроку.</p></div></div>
+      <div class="code-title"><h3>Програма Python</h3><button class="copy" type="button">Копіювати код</button></div>
+      <pre><code>print("=== ПРИГОДА В ЛІСІ ===")
+print("Герой: Максим")
+print("Максим пішов у ліс шукати скарб.")
+print("Він знайшов стару карту і вирушив у дорогу.")
+print()
+
+for i in range(1, 6):
+    print("Крок", i)
+
+    if i == 1:
+        print("Максим перейшов через струмок.")
+    elif i == 2:
+        print("Він побачив дивні сліди.")
+    elif i == 3:
+        print("Хлопець знайшов старий ключ.")
+    elif i == 4:
+        print("Він помітив скриню під деревом.")
+    else:
+        print("Максим відкрив скриню і знайшов золото!")
+
+print()
+print("Максим повернувся додому щасливим.")
+print("Кінець пригоди!")</code></pre>
+    </article>
+
+    <article class="story" id="ivan">
+      <div class="story-head">
+        <div><div class="story-number">Історія 3 · цикл і обчислення</div><h2>Мандрівка країною чисел</h2><div class="author">Автор програми: Іван</div></div>
+        <svg class="illustration" viewBox="0 0 500 220" role="img" aria-label="Кольорові картки з числами, квадратами та кубами">
+          <rect width="500" height="220" rx="20" fill="#f6edc9"/><path d="M0 180q135-45 250 0t250 0v40H0z" fill="#e6d99c"/>
+          <g transform="rotate(-8 142 112)"><rect x="76" y="48" width="120" height="133" rx="12" fill="#fffefa" stroke="#dbc98a" stroke-width="3"/><text x="136" y="88" text-anchor="middle" font-size="15" fill="#64736c">ЧИСЛО</text><text x="136" y="137" text-anchor="middle" font-size="43" font-weight="800" fill="#2f715b">4</text></g>
+          <g transform="rotate(4 257 112)"><rect x="198" y="48" width="120" height="133" rx="12" fill="#fffefa" stroke="#dbc98a" stroke-width="3"/><text x="258" y="88" text-anchor="middle" font-size="15" fill="#64736c">КВАДРАТ</text><text x="258" y="137" text-anchor="middle" font-size="38" font-weight="800" fill="#b16e4c">16</text></g>
+          <g transform="rotate(10 370 112)"><rect x="320" y="48" width="120" height="133" rx="12" fill="#fffefa" stroke="#dbc98a" stroke-width="3"/><text x="380" y="88" text-anchor="middle" font-size="15" fill="#64736c">КУБ</text><text x="380" y="137" text-anchor="middle" font-size="38" font-weight="800" fill="#597d9c">64</text></g>
+          <path d="M201 193h110" stroke="#bdac6d" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 8"/>
+        </svg>
+      </div>
+      <div class="task"><h3>Завдання-історія</h3><p>Іван створює таблицю для дослідника країни чисел. У ній треба показати числа від 1 до 20, квадрат кожного числа та його куб. Наприкінці програма має підрахувати суму всіх квадратів і повідомити, що обчислення завершено.</p></div>
+      <div class="story-text"><p>Дослідник рухається числовою стежкою від 1 до 20. На кожній зупинці він записує число, його квадрат і куб. Після останньої зупинки підсумовує всі квадрати.</p></div>
+      <div class="lesson"><div><h3>Як працює <code>for</code></h3><p><code>range(1, 21)</code> перебирає числа від 1 до 20, бо останнє число в <code>range</code> не включається.</p></div><div><h3>Що накопичує програма?</h3><p>Змінна <code>total</code> додає квадрат поточного числа на кожному повторенні циклу.</p></div></div>
+      <div class="code-title"><h3>Програма Python</h3><button class="copy" type="button">Копіювати код</button></div>
+      <pre><code>print("=== ТАБЛИЦЯ ЧИСЕЛ ===")
+print("Автор: Іван")
+print("----------------------------")
+print("Число | Квадрат | Куб")
+print("----------------------------")
+
+total = 0
+
+for i in range(1, 21):
+    square = i ** 2
+    cube = i ** 3
+    print(i, "|", square, "|", cube)
+    total += square
+
+print("----------------------------")
+print("Сума всіх квадратів:", total)
+print("Програму завершено!")</code></pre>
+      <p class="endnote">Для чисел від 1 до 20 сума квадратів дорівнює 2870.</p>
+    </article>
+
+    <article class="story" id="roma">
+      <div class="story-head">
+        <div><div class="story-number">Історія 4 · перебір списку</div><h2>Кіт Lucky та коробка скарбів</h2><div class="author">Автор програми: Рома</div></div>
+        <svg class="illustration" viewBox="0 0 500 220" role="img" aria-label="Кіт Lucky знайшов коробку з банками згущеного молока">
+          <rect width="500" height="220" rx="20" fill="#e6f1e9"/><ellipse cx="252" cy="190" rx="185" ry="15" fill="#c5d9c7"/>
+          <path d="M145 100h248v78H145z" fill="#c99761" stroke="#8c6743" stroke-width="4"/><path d="m137 102 132-64 132 64-132 61z" fill="#dfb77b" stroke="#8c6743" stroke-width="4"/><path d="m144 104 124 61 123-61" fill="none" stroke="#8c6743" stroke-width="3"/>
+          <g><rect x="206" y="79" width="37" height="61" rx="7" fill="#fff4d6" stroke="#c3a86f" stroke-width="3"/><path d="M205 85h39" stroke="#ba6549" stroke-width="8"/><rect x="253" y="70" width="39" height="70" rx="7" fill="#fff4d6" stroke="#c3a86f" stroke-width="3"/><path d="M252 78h41" stroke="#77a790" stroke-width="8"/><rect x="302" y="84" width="37" height="56" rx="7" fill="#fff4d6" stroke="#c3a86f" stroke-width="3"/><path d="M301 90h39" stroke="#d4a143" stroke-width="8"/></g>
+          <path d="M57 147q-12-22 5-40l17-16 18 14 22-3 17-15 17 19q10 22-5 39c-11 12-29 14-43 5-14 9-34 7-48-3z" fill="#39423e"/><path d="M68 108 67 78l27 20m37-2 22-23 3 35" fill="#39423e"/><circle cx="88" cy="121" r="4" fill="#f7dc91"/><circle cx="115" cy="121" r="4" fill="#f7dc91"/><path d="M96 131h10m-5 1-12 5m12-5 12 5" stroke="#edc0a6" stroke-width="2" stroke-linecap="round"/><path d="M61 148q-22 12-29-4" fill="none" stroke="#39423e" stroke-width="9" stroke-linecap="round"/><text x="75" y="60" fill="#2f715b" font-size="17" font-weight="700">Lucky!</text>
+        </svg>
+      </div>
+      <div class="task"><h3>Завдання-історія</h3><p>Кіт Lucky знаходить коробку з чотирма банками згущеного молока: класичною, з кокосом, з кавою та вареною. Створи список назв і за допомогою циклу <code>for</code> перебери всі банки. Для кожної виведи її номер і назву, а наприкінці порахуй загальну кількість.</p></div>
+      <div class="story-text"><p>Lucky зазирає до коробки й перевіряє кожну банку по черзі. Він рахує знахідки, називає смак кожної та, задоволений перевіркою, вмощується спати на дивані.</p></div>
+      <div class="lesson"><div><h3>Як працює <code>for</code></h3><p>Цикл бере по одному елементу зі списку <code>milk_box</code>. Змінна <code>can</code> містить назву поточної банки.</p></div><div><h3>Навіщо лічильник?</h3><p><code>total_cans</code> збільшується на 1 під час кожного проходу циклу й показує номер банки та підсумок.</p></div></div>
+      <div class="code-title"><h3>Програма Python</h3><button class="copy" type="button">Копіювати код</button></div>
+      <pre><code># Nazvy produktiv zapysani latynskymy literamy
+milk_box = [
+    "Klassychne zgushchene moloko",
+    "Zgushchenka z kokosom",
+    "Zgushchenka z kavoiu",
+    "Varena zgushchenka"
+]
+
+total_cans = 0
+
+print("Cat Lucky pidkhodyt do korobky... Pochynaiemo rakhunok!\n")
+
+for can in milk_box:
+    total_cans += 1
+    print(f"Banka nomer {total_cans}: Lucky znaishov [{can}]!")
+    print("-> Kit kazhe: 'Miau, tse smachno!'")
+
+print("\n--------------------------------------------------")
+print(f"Kinec prohulianky! Lucky pereviryv {total_cans} banok.")
+print("Lucky zadovolenyi i yde spaty na dyvan.")</code></pre>
+      <p class="endnote">У цій програмі імена й назви продуктів записані латинськими літерами, як просив автор.</p>
+    </article>
+
+    <article class="story" id="vlad">
+      <div class="story-head">
+        <div><div class="story-number">Історія 5 · повторення задану кількість разів</div><h2>Мурчик і п’ять ложок</h2><div class="author">Автор програми: Влад</div></div>
+        <svg class="illustration" viewBox="0 0 500 220" role="img" aria-label="Кіт Мурчик ласує згущеним молоком ложкою">
+          <rect width="500" height="220" rx="20" fill="#f8e6d8"/><ellipse cx="251" cy="190" rx="173" ry="14" fill="#e8c7ae"/>
+          <path d="M77 137h345v18H77z" fill="#ae7954"/><path d="M107 155v40m284-40v40" stroke="#8d6143" stroke-width="11"/>
+          <rect x="333" y="91" width="57" height="46" rx="8" fill="#fff2d3" stroke="#d0aa64" stroke-width="3"/><path d="M331 91h61l-7-12h-47z" fill="#d4b15f"/><path d="M343 109h37v17h-37z" fill="#9b5c42"/>
+          <path d="M143 143q-19-20-7-42l17-18 22 15 25-3 18-14 17 22q9 23-7 39c-11 11-29 12-44 4-14 9-31 8-41-3z" fill="#4b514d"/><path d="m150 99-1-28 27 19m42-4 22-22 2 34" fill="#4b514d"/><circle cx="171" cy="116" r="4" fill="#f4d992"/><circle cx="204" cy="116" r="4" fill="#f4d992"/><path d="M181 127h12m-6 1-12 5m12-5 12 5" stroke="#ebb8a2" stroke-width="2" stroke-linecap="round"/>
+          <path d="M245 96q26-4 47-3" stroke="#74828a" stroke-width="5" stroke-linecap="round"/><ellipse cx="297" cy="93" rx="13" ry="7" fill="#c5d3d4" stroke="#74828a" stroke-width="3"/><path d="M296 88q2-9 9-7" fill="none" stroke="#fff2d3" stroke-width="4" stroke-linecap="round"/>
+          <text x="115" y="54" font-size="17" fill="#a76548" font-weight="700">Ам! × 5</text>
+        </svg>
+      </div>
+      <div class="task"><h3>Завдання-історія</h3><p>Мурчик знаходить на столі банку згущеного молока й вирішує з’їсти рівно п’ять ложок. Створи цикл, який п’ять разів виводить повідомлення про чергову ложку. Після цього повідом, що банка спорожніла, а кіт заснув біля неї.</p></div>
+      <div class="story-text"><p>Мурчик підкрадається до столу, набирає ложку за ложкою і рахує кожну. Коли лічильник доходить до п’яти, ласощі закінчуються. Кіт ситий і засинає біля банки.</p></div>
+      <div class="lesson"><div><h3>Як працює <code>for</code></h3><p><code>range(1, 6)</code> створює п’ять значень: 1, 2, 3, 4 і 5.</p></div><div><h3>Що показує <code>lozhka</code>?</h3><p>На кожному повторенні змінна містить номер з’їденої ложки й підставляється у текст повідомлення.</p></div></div>
+      <div class="code-title"><h3>Програма Python</h3><button class="copy" type="button">Копіювати код</button></div>
+      <pre><code>print("=== МУРЧИК І П’ЯТЬ ЛОЖОК ===")
+print("Автор: Влад")
+print()
+
+print("🐾 Мурчик підкрадається до столу... Банка зі згущеним молоком знайдена!")
+print("Кіт вирішує з'їсти рівно 5 ложок солодощів.\n")
+
+for lozhka in range(1, 6):
+    print(f"🥄 Мурчик робить «ам!» — з'їдено ложку № {lozhka}")
+
+print("\n😴 Банка порожня! Щасливий і солодкий кіт Мурчик засинає прямо біля банки.")</code></pre>
+    </article>
+
+    <article class="story" id="vasyl">
+      <div class="story-head">
+        <div><div class="story-number">Історія 6 · розгалуження та вибір</div><h2>Кіт шукає їжу</h2><div class="author">Автор програми: Василь · гравець керує котом</div></div>
+        <svg class="illustration" viewBox="0 0 500 220" role="img" aria-label="Кіт обирає шлях до миски з їжею">
+          <rect width="500" height="220" rx="20" fill="#e6eef7"/><ellipse cx="255" cy="190" rx="180" ry="14" fill="#cad9e4"/>
+          <path d="M46 158q72-90 154-4m0 0q73-92 153-2m-153 2q67-85 144 0" fill="none" stroke="#9bb4c2" stroke-width="5" stroke-linecap="round" stroke-dasharray="8 9"/>
+          <g transform="translate(56 93)"><path d="M24 62q-15-18-4-38L35 9l18 14 22-2L91 6l14 20q8 19-6 34c-10 10-25 11-38 3-12 8-27 8-37-1z" fill="#48504a"/><path d="M32 27 30 1l24 17m33-2 20-20 2 31" fill="#48504a"/><circle cx="51" cy="39" r="3.5" fill="#f6d88f"/><circle cx="78" cy="39" r="3.5" fill="#f6d88f"/><path d="M58 48h12m-6 1-10 4m10-4 10 4" stroke="#e9b8a2" stroke-width="2" stroke-linecap="round"/></g>
+          <g transform="translate(354 103)"><path d="M0 28q2-22 42-22t42 22z" fill="#7ca594"/><path d="M5 28q4 25 37 25t37-25" fill="#b6d1c0"/><ellipse cx="42" cy="28" rx="36" ry="10" fill="#f4dda0"/><circle cx="32" cy="25" r="4" fill="#b77c4c"/><circle cx="48" cy="30" r="4" fill="#b77c4c"/><circle cx="58" cy="23" r="4" fill="#b77c4c"/></g>
+          <circle cx="254" cy="77" r="31" fill="#fffefa" stroke="#dfc990" stroke-width="3"/><text x="254" y="88" text-anchor="middle" font-size="34" font-weight="800" fill="#547b68">?</text>
+          <text x="198" y="142" font-size="14" fill="#52625a" font-weight="700">Обери шлях</text>
+        </svg>
+      </div>
+      <div class="task"><h3>Завдання-історія</h3><p>Створи інтерактивну гру, у якій гравець керує голодним котом. Спочатку запропонуй три варіанти дій. Якщо кіт вирушає шукати їжу, запропонуй ще три шляхи. Для одного з них, де кіт знаходить рибу, додай фінальний вибір: з'їсти рибу одразу, принести додому або повернути її. Для кожного вибору виведи окреме завершення історії.</p></div>
+      <div class="story-text"><p>Голодний кіт має вирішити, що робити. Гравець обирає один із варіантів і читає, чим завершиться пригода. Кіт може знайти рибу, попросити її у рибалки або повернутися додому без здобичі.</p></div>
+      <div class="lesson"><div><h3>Як працюють умови</h3><p><code>if</code>, <code>elif</code> та <code>else</code> перевіряють номер вибору й запускають відповідну гілку історії.</p></div><div><h3>Чим ця програма відрізняється?</h3><p>Тут немає циклу <code>for</code>: гравець сам вводить рішення, а вкладені умови визначають продовження гри.</p></div></div>
+      <div class="code-title"><h3>Програма Python</h3><button class="copy" type="button">Копіювати код</button></div>
+      <pre><code>print("=== КІТ ШУКАЄ ЇЖУ ===")
+print("Автор: Василь")
+print("Привіт! Це історія про кота. Ти будеш грати за нього.\n")
+
+vubir1 = int(input(
+    "1. Лежати голодним\n"
+    "2. Піти шукати їжу\n"
+    "3. Зайти до сусідів без дозволу\n"
+    "Обери варіант: "
+))
+
+if vubir1 == 1:
+    print("Ти лежав і голодував. Кінець гри.")
+elif vubir1 == 2:
+    print("Ти пішов шукати їжу.")
+
+    vubir2 = int(input(
+        "1. Зайти до відкритого рибного магазину й узяти рибу\n"
+        "2. Підійти до рибалки й попросити рибу\n"
+        "3. Зайти до забігайлівки й узяти рибу\n"
+        "Обери варіант: "
+    ))
+
+    if vubir2 == 1:
+        print("Ти знайшов рибу в магазині.")
+        vubir3 = int(input(
+            "1. Повернутися додому з рибою\n"
+            "2. З'їсти рибу зараз і піти додому\n"
+            "3. Повернути рибу\n"
+            "Обери варіант: "
+        ))
+
+        if vubir3 == 1:
+            print("Господарі помітили рибу та забрали її, але поділилися маленьким шматочком. Кінець гри.")
+        elif vubir3 == 2:
+            print("Ти з'їв рибу й пішов додому ситим. Кінець гри.")
+        elif vubir3 == 3:
+            print("Ти повернув рибу господарю. Ти залишився голодним, але вчинив чесно. Кінець гри.")
+        else:
+            print("Такого варіанта немає. Гру завершено.")
+
+    elif vubir2 == 2:
+        print("Рибалка не мав зайвої риби й попросив тебе відійти. Кінець гри.")
+    elif vubir2 == 3:
+        print("Тебе помітили й попросили піти. Ти повернувся додому без риби. Кінець гри.")
+    else:
+        print("Такого варіанта немає. Гру завершено.")
+
+elif vubir1 == 3:
+    print("Сусіди почули шум і випровадили тебе. Ти повернувся додому без їжі. Кінець гри.")
+else:
+    print("Такого варіанта немає. Гру завершено.")</code></pre>
+    </article>
+  </main>
+  <footer>Навчальна добірка Python · Історії та приклади циклу <code>for</code></footer>
+  <script>
+    document.querySelectorAll(".copy").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const code = button.closest("article").querySelector("pre code").innerText;
+        try {
+          await navigator.clipboard.writeText(code);
+          button.textContent = "Скопійовано ✓";
+          window.setTimeout(() => button.textContent = "Копіювати код", 1600);
+        } catch {
+          button.textContent = "Не вдалося скопіювати";
+          window.setTimeout(() => button.textContent = "Копіювати код", 1800);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
